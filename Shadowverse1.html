@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シャドウバース ボイスクイズ</title>
+    
+    <style>
+        /* CSSに変更はありません */
+        body { font-family: sans-serif; text-align: center; background-color: #1a2639; color: #f0f8ff; padding: 20px; }
+        h1 { color: #ffc107; }
+        .hidden { display: none; }
+        #selection-container { padding-top: 50px; }
+        .selection-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-top: 30px; }
+        .group-btn, .difficulty-btn { padding: 20px 40px; font-size: 20px; cursor: pointer; border-radius: 10px; border: 2px solid #007bff; background-color: #343a40; color: white; transition: background-color 0.3s, transform 0.2s; }
+        .group-btn:hover, .difficulty-btn:hover { background-color: #0056b3; transform: scale(1.05); }
+        #quiz-container { max-width: 800px; margin: 0 auto; position: relative; }
+        #play-button, #next-button { background-color: #007bff; color: white; border: none; border-radius: 8px; padding: 15px 30px; font-size: 18px; cursor: pointer; transition: background-color 0.3s; margin: 10px; }
+        .choices-container { margin: 20px 0; display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; }
+        .choice-button { background-color: #343a40; border: 2px solid #6c757d; border-radius: 10px; padding: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; width: 150px; }
+        .choice-image { width: 120px; height: 120px; object-fit: cover; border-radius: 5px; pointer-events: none; }
+        .choice-name { color: white; font-weight: bold; margin-top: 8px; pointer-events: none; }
+        #result-area { margin-top: 20px; min-height: 250px; }
+        #result-text { font-size: 24px; font-weight: bold; }
+        #character-image { max-width: 80%; height: auto; max-height: 200px; margin-top: 20px; border: 4px solid #f0f8ff; border-radius: 10px; }
+        #final-score { font-size: 28px; font-weight: bold; color: #ffc107; }
+        #reset-btn { position: absolute; top: 15px; right: 15px; padding: 8px 15px; font-size: 14px; background-color: #6c757d; border: none; color: white; border-radius: 5px; cursor: pointer; }
+        #reset-btn:hover { background-color: #5a6268; }
+    </style>
+</head>
+<body>
+
+    <div id="selection-container">
+        <div id="group-selection">
+            <h1>カードパックを選択</h1>
+            <div class="selection-buttons">
+                <button class="group-btn" data-group="ベーシック+伝説の幕開け(1)">ベーシック+伝説の幕開け(1)</button>
+                <button class="group-btn" data-group="インフィニティ・エボルヴ(2)">インフィニティ・エボルヴ(2)</button>
+                <button class="group-btn" data-group="実装待ち">実装待ち</button>
+                <button class="group-btn" data-group="すべて">すべて</button>
+            </div>
+        </div>
+        <div id="difficulty-selection" class="hidden">
+            <h1>難易度を選択</h1>
+            <div class="selection-buttons">
+                <button class="difficulty-btn" data-difficulty="かんたん">かんたん</button>
+                <button class="difficulty-btn" data-difficulty="むずかしい">むずかしい</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="quiz-container" class="hidden">
+        <button id="reset-btn">TOPへ戻る</button>
+        <h1 id="question-title">この声は誰？</h1>
+        <p id="progress-text"></p>
+        <audio id="voice-player" class="hidden"></audio>
+        <button id="play-button">ボイスを再生 🔊</button>
+        <div id="choices" class="choices-container"></div>
+        <div id="result-area">
+            <p id="result-text"></p>
+            <img id="character-image" src="" alt="キャラクター画像" class="hidden">
+        </div>
+        <button id="next-button" class="hidden">次の問題へ</button>
+    </div>
+
+    <script>
+        const allQuizData = [
+            {
+                voice: 'assets/pack1/voices/メイF.mp3',
+                answerImage: 'assets/pack1/images/アドベンチャーエルフ・メイ.png',
+                answer: 'アドベンチャーエルフ・メイ',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: 'アドベンチャーエルフ・メイ', image: 'assets/pack1/images/アドベンチャーエルフ・メイ.png' },
+                    { name: 'ウォーターフェアリー', image: 'assets/pack1/images/ウォーターフェアリー.png' },
+                    { name: 'ピュアクリスタリア・リリィ', image: 'assets/pack1/images/ピュアクリスタリア・リリィ.png' },
+                    { name: '舞い踊る妖精', image: 'assets/pack1/images/舞い踊る妖精.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/異端の侍F.mp3',
+                answerImage: 'assets/pack1/images/異端の侍.png',
+                answer: '異端の侍',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '異端の侍', image: 'assets/pack1/images/異端の侍.png' },
+                    { name: 'レヴィオンアックス・ジェノ', image: 'assets/pack1/images/レヴィオンアックス・ジェノ.png' },
+                    { name: '常在戦場・カゲミツ', image: 'assets/pack1/images/常在戦場・カゲミツ.png' },
+                    { name: 'レヴィオンの迅雷・アルベール', image: 'assets/pack1/images/レヴィオンの迅雷・アルベール.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/アポロンF.mp3',
+                answerImage: 'assets/pack1/images/迸る光明・アポロン.png',
+                answer: '迸る光明・アポロン',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '迸る光明・アポロン', image: 'assets/pack1/images/迸る光明・アポロン.png' },
+                    { name: '不屈のファイター', image: 'assets/pack1/images/不屈のファイター.png' },
+                    { name: '激震のゴリアテ', image: 'assets/pack1/images/激震のゴリアテ.png' },
+                    { name: '観察の探偵', image: 'assets/pack1/images/観察の探偵.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/エースE.mp3',
+                answerImage: 'assets/pack1/images/新たなる少女・エース.png',
+                answer: '新たなる少女・エース',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '新たなる少女・エース', image: 'assets/pack1/images/新たなる少女・エース.png' },
+                    { name: 'ストラグルリーダー・ルキナ', image: 'assets/pack1/images/ストラグルリーダー・ルキナ.png' },
+                    { name: 'ブーストエクステンド・ララミア', image: 'assets/pack1/images/ブーストエクステンド・ララミア.png' },
+                    { name: 'プロシードハート・オーキス', image: 'assets/pack1/images/プロシードハート・オーキス.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/ミリアムF.mp3',
+                answerImage: 'assets/pack1/images/レゾリューション・ミリアム.png',
+                answer: 'レゾリューション・ミリアム',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: 'レゾリューション・ミリアム', image: 'assets/pack1/images/レゾリューション・ミリアム.png' },
+                    { name: 'アンストッパブルガンナー', image: 'assets/pack1/images/アンストッパブルガンナー.png' },
+                    { name: 'ビビッドインベンター・イリス', image: 'assets/pack1/images/ビビッドインベンター・イリス.png' },
+                    { name: 'エレクトロウィッパー', image: 'assets/pack1/images/エレクトロウィッパー.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/ミーノF.mp3',
+                answerImage: 'assets/pack1/images/辣腕の死神・ミーノ.png',
+                answer: '辣腕の死神・ミーノ',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '辣腕の死神・ミーノ', image: 'assets/pack1/images/辣腕の死神・ミーノ.png' },
+                    { name: '無名の悪魔', image: 'assets/pack1/images/無名の悪魔.png' },
+                    { name: '魅惑のサキュバス・リリム', image: 'assets/pack1/images/魅惑のサキュバス・リリム.png' },
+                    { name: '燃え盛る魔剣・オルトロス', image: 'assets/pack1/images/燃え盛る魔剣・オルトロス.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/王断の威光F.mp3',
+                answerImage: 'assets/pack1/images/王断の威光.png',
+                answer: '王断の威光',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '王断の威光', image: 'assets/pack1/images/王断の威光.png' },
+                    { name: '王家の御者', image: 'assets/pack1/images/王家の御者.png' },
+                    { name: '王断の天宮・スタチウム', image: 'assets/pack1/images/王断の天宮・スタチウム.png' },
+                    { name: '白銀の騎士団長・エミリア', image: 'assets/pack1/images/白銀の騎士団長・エミリア.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/マリオネットランサーD.mp3',
+                answerImage: 'assets/pack1/images/マリオネットランサー.png',
+                answer: 'マリオネットランサー',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: 'マリオネットランサー', image: 'assets/pack1/images/マリオネットランサー.png' },
+                    { name: 'オートマタアサシン', image: 'assets/pack1/images/オートマタアサシン.png' },
+                    { name: '殺意の糸・ノア', image: 'assets/pack1/images/殺意の糸・ノア.png' },
+                    { name: '愛執のドールユーザー', image: 'assets/pack1/images/愛執のドールユーザー.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/竜育の少女F.mp3',
+                answerImage: 'assets/pack1/images/竜育の少女.png',
+                answer: '竜育の少女',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '竜育の少女', image: 'assets/pack1/images/竜育の少女.png' },
+                    { name: '栄弦の天宮・リュウフウ', image: 'assets/pack1/images/栄弦の天宮・リュウフウ.png' },
+                    { name: '駆け出しのドラゴンスレイヤー', image: 'assets/pack1/images/駆け出しのドラゴンスレイヤー.png' },
+                    { name: '風を駆る者・エイファ', image: 'assets/pack1/images/風を駆る者・エイファ.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/フィルドアF.mp3',
+                answerImage: 'assets/pack1/images/楽朗の天宮・フィルドア.png',
+                answer: '楽朗の天宮・フィルドア',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '楽朗の天宮・フィルドア', image: 'assets/pack1/images/楽朗の天宮・フィルドア.png' },
+                    { name: '禁密の天宮・ロナヴェロ', image: 'assets/pack1/images/禁密の天宮・ロナヴェロ.png' },
+                    { name: '瞑地の天宮・ムカン', image: 'assets/pack1/images/瞑地の天宮・ムカン.png' },
+                    { name: '薫交の天宮・バックウッド', image: 'assets/pack1/images/薫交の天宮・バックウッド.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/ウィングウォーリアーE.mp3',
+                answerImage: 'assets/pack1/images/ウィングウォーリアー.png',
+                answer: 'ウィングウォーリアー',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'むずかしい',
+                choices: [
+                    { name: 'ウィングウォーリアー', image: 'assets/pack1/images/ウィングウォーリアー.png' },
+                    { name: 'セイクリッドグリフォン', image: 'assets/pack1/images/セイクリッドグリフォン.png' },
+                    { name: 'ホーリーファルコン', image: 'assets/pack1/images/ホーリーファルコン.png' },
+                    { name: 'レヴィオンアックス・ジェノ', image: 'assets/pack1/images/レヴィオンアックス・ジェノ.png' },
+                    { name: '言の葉のエルダーウィードマン', image: 'assets/pack1/images/言の葉のエルダーウィードマン.png' },
+                    { name: '壮麗なる隼', image: 'assets/pack1/images/壮麗なる隼.png' },
+                    { name: '標を与えるレディアンスエンジェル', image: 'assets/pack1/images/標を与えるレディアンスエンジェル.png' },
+                    { name: '煌翼のフェザーフォルク・リノ', image: 'assets/pack1/images/煌翼のフェザーフォルク・リノ.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/ロデオF.mp3',
+                answerImage: 'assets/pack1/images/裁決のアナテマ・ロデオ.png',
+                answer: '裁決のアナテマ・ロデオ',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'むずかしい',
+                choices: [
+                    { name: '裁決のアナテマ・ロデオ', image: 'assets/pack1/images/裁決のアナテマ・ロデオ.png' },
+                    { name: 'オウルサモナー', image: 'assets/pack1/images/オウルサモナー.png' },
+                    { name: 'オートマタアサシン', image: 'assets/pack1/images/オートマタアサシン.png' },
+                    { name: 'ジャグリングゴースト', image: 'assets/pack1/images/ジャグリングゴースト.png' },
+                    { name: 'メタルマーセナリー・ディルク', image: 'assets/pack1/images/メタルマーセナリー・ディルク.png' },
+                    { name: 'ラバーズネクロマンサー', image: 'assets/pack1/images/ラバーズネクロマンサー.png' },
+                    { name: '闇の賞金稼ぎ・バルト', image: 'assets/pack1/images/闇の賞金稼ぎ・バルト.png' },
+                    { name: '狂気の創造者・リーアム', image: 'assets/pack1/images/狂気の創造者・リーアム.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/ノアEK.mp3',
+                answerImage: 'assets/pack1/images/殺意の糸・ノア.png',
+                answer: '殺意の糸・ノア',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'むずかしい',
+                choices: [
+                    { name: '殺意の糸・ノア', image: 'assets/pack1/images/殺意の糸・ノア.png' },
+                    { name: 'オウルサモナー', image: 'assets/pack1/images/オウルサモナー.png' },
+                    { name: 'ストレイビーストマン', image: 'assets/pack1/images/ストレイビーストマン.png' },
+                    { name: '愛の騎士・イアン', image: 'assets/pack1/images/愛の騎士・イアン.png' },
+                    { name: '禁約の悪魔', image: 'assets/pack1/images/禁約の悪魔.png' },
+                    { name: '串刺し公・ヴラド', image: 'assets/pack1/images/串刺し公・ヴラド.png' },
+                    { name: '戦斧の竜殺し', image: 'assets/pack1/images/戦斧の竜殺し.png' },
+                    { name: '夜の鬼人', image: 'assets/pack1/images/夜の鬼人.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/働きバッタK.mp3',
+                answerImage: 'assets/pack1/images/働きバッタ.png',
+                answer: '働きバッタ',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'むずかしい',
+                choices: [
+                    { name: '働きバッタ', image: 'assets/pack1/images/働きバッタ.png' },
+                    { name: 'バトルマーチャント', image: 'assets/pack1/images/バトルマーチャント.png' },
+                    { name: 'ストレイビーストマン', image: 'assets/pack1/images/ストレイビーストマン.png' },
+                    { name: 'ラバーズネクロマンサー', image: 'assets/pack1/images/ラバーズネクロマンサー.png' },
+                    { name: '言の葉のエルダーウィードマン', image: 'assets/pack1/images/言の葉のエルダーウィードマン.png' },
+                    { name: '煌翼のフェザーフォルク・リノ', image: 'assets/pack1/images/煌翼のフェザーフォルク・リノ.png' },
+                    { name: '夢想のペンギンウィザード', image: 'assets/pack1/images/夢想のペンギンウィザード.png' },
+                    { name: '魔煌のトリックスター・ラスティ', image: 'assets/pack1/images/魔煌のトリックスター・ラスティ.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/夜の鬼人F.mp3',
+                answerImage: 'assets/pack1/images/夜の鬼人.png',
+                answer: '夜の鬼人',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'むずかしい',
+                choices: [
+                    { name: '夜の鬼人', image: 'assets/pack1/images/夜の鬼人.png' },
+                    { name: '猛撃のドラゴンウォーリアー', image: 'assets/pack1/images/猛撃のドラゴンウォーリアー.png' },
+                    { name: '標を与えるレディアンスエンジェル', image: 'assets/pack1/images/標を与えるレディアンスエンジェル.png' },
+                    { name: '裁決のアナテマ・ロデオ', image: 'assets/pack1/images/裁決のアナテマ・ロデオ.png' },
+                    { name: '荒波のドラグーン・ザハール', image: 'assets/pack1/images/荒波のドラグーン・ザハール.png' },
+                    { name: '雲海の騎竜兵', image: 'assets/pack1/images/雲海の騎竜兵.png' },
+                    { name: 'ジャグリングゴースト', image: 'assets/pack1/images/ジャグリングゴースト.png' },
+                    { name: '串刺し公・ヴラド', image: 'assets/pack1/images/串刺し公・ヴラド.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/バトルマーチャントK.mp3',
+                answerImage: 'assets/pack1/images/バトルマーチャント.png',
+                answer: 'バトルマーチャント',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'むずかしい',
+                choices: [
+                    { name: 'バトルマーチャント', image: 'assets/pack1/images/バトルマーチャント.png' },
+                    { name: 'ストレイビーストマン', image: 'assets/pack1/images/ストレイビーストマン.png' },
+                    { name: 'メタルマーセナリー・ディルク', image: 'assets/pack1/images/メタルマーセナリー・ディルク.png' },
+                    { name: '闇の賞金稼ぎ・バルト', image: 'assets/pack1/images/闇の賞金稼ぎ・バルト.png' },
+                    { name: '禁約の悪魔', image: 'assets/pack1/images/禁約の悪魔.png' },
+                    { name: '風を読む者・ゼル', image: 'assets/pack1/images/風を読む者・ゼル.png' },
+                    { name: '戦斧の竜殺し', image: 'assets/pack1/images/戦斧の竜殺し.png' },
+                    { name: '煌牙の義勇・キット', image: 'assets/pack1/images/煌牙の義勇・キット.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/レミラミE.mp3',
+                answerImage: 'assets/pack1/images/相貌の魔女・レミラミ.png',
+                answer: '相貌の魔女・レミラミ',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'むずかしい',
+                choices: [
+                    { name: '相貌の魔女・レミラミ', image: 'assets/pack1/images/相貌の魔女・レミラミ.png' },
+                    { name: '煌響の使者・アンリエット', image: 'assets/pack1/images/煌響の使者・アンリエット.png' },
+                    { name: '癒しのシスター', image: 'assets/pack1/images/癒しのシスター.png' },
+                    { name: '戦斧の竜殺し', image: 'assets/pack1/images/戦斧の竜殺し.png' },
+                    { name: '大地の守護神・ミーヴェ', image: 'assets/pack1/images/大地の守護神・ミーヴェ.png' },
+                    { name: '怪奇の探索者・ユナ', image: 'assets/pack1/images/怪奇の探索者・ユナ.png' },
+                    { name: 'ワンダーウィッチ・エミル', image: 'assets/pack1/images/ワンダーウィッチ・エミル.png' },
+                    { name: 'ルーンブレイドコンダクター', image: 'assets/pack1/images/ルーンブレイドコンダクター.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/ジェネドラD.mp3',
+                answerImage: 'assets/pack1/images/再臨のジェネシスドラゴン.png',
+                answer: '再臨のジェネシスドラゴン',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'むずかしい',
+                choices: [
+                    { name: '再臨のジェネシスドラゴン', image: 'assets/pack1/images/再臨のジェネシスドラゴン.png' },
+                    { name: 'ケンタウロスの騎士', image: 'assets/pack1/images/ケンタウロスの騎士.png' },
+                    { name: 'シャークソルジャー', image: 'assets/pack1/images/シャークソルジャー.png' },
+                    { name: 'ナイトフォールドラゴン', image: 'assets/pack1/images/ナイトフォールドラゴン.png' },
+                    { name: 'ビギンズブレイダー・アマツ', image: 'assets/pack1/images/ビギンズブレイダー・アマツ.png' },
+                    { name: '雲海の騎竜兵', image: 'assets/pack1/images/雲海の騎竜兵.png' },
+                    { name: '狂気の創造者・リーアム', image: 'assets/pack1/images/狂気の創造者・リーアム.png' },
+                    { name: '猛撃のドラゴンウォーリアー', image: 'assets/pack1/images/猛撃のドラゴンウォーリアー.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/キットT.mp3',
+                answerImage: 'assets/pack1/images/煌牙の義勇・キット.png',
+                answer: '煌牙の義勇・キット',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'むずかしい',
+                choices: [
+                    { name: '煌牙の義勇・キット', image: 'assets/pack1/images/煌牙の義勇・キット.png' },
+                    { name: '煌翼のフェザーフォルク・リノ', image: 'assets/pack1/images/煌翼のフェザーフォルク・リノ.png' },
+                    { name: 'シャークソルジャー', image: 'assets/pack1/images/シャークソルジャー.png' },
+                    { name: 'ナイトフォールドラゴン', image: 'assets/pack1/images/ナイトフォールドラゴン.png' },
+                    { name: 'ビギンズブレイダー・アマツ', image: 'assets/pack1/images/ビギンズブレイダー・アマツ.png' },
+                    { name: '雲海の騎竜兵', image: 'assets/pack1/images/雲海の騎竜兵.png' },
+                    { name: '狂気の創造者・リーアム', image: 'assets/pack1/images/狂気の創造者・リーアム.png' },
+                    { name: '猛撃のドラゴンウォーリアー', image: 'assets/pack1/images/猛撃のドラゴンウォーリアー.png' }
+                ]
+            },
+        ];
+
+        const selectionContainer = document.getElementById('selection-container');
+        const groupSelection = document.getElementById('group-selection');
+        const difficultySelection = document.getElementById('difficulty-selection');
+        const quizContainer = document.getElementById('quiz-container');
+        const progressText = document.getElementById('progress-text');
+        const questionTitle = document.getElementById('question-title');
+        const playButton = document.getElementById('play-button');
+        const choicesContainer = document.getElementById('choices');
+        const resultText = document.getElementById('result-text');
+        const characterImage = document.getElementById('character-image');
+        const nextButton = document.getElementById('next-button');
+        const resetButton = document.getElementById('reset-btn');
+
+        let selectedGroup;
+        let selectedDifficulty;
+        let filteredQuizData;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        
+        function startGame() {
+            const questionCount = 10;
+            let tempQuizData = allQuizData;
+            if (selectedGroup !== 'すべて') {
+                tempQuizData = tempQuizData.filter(q => q.group === selectedGroup);
+            }
+            filteredQuizData = tempQuizData.filter(q => q.difficulty === selectedDifficulty);
+
+            if (filteredQuizData.length === 0) {
+                alert('この条件に合う問題がありません。');
+                showSelectionScreen();
+                return;
+            }
+
+            if (filteredQuizData.length > questionCount) {
+                shuffleArray(filteredQuizData);
+                filteredQuizData = filteredQuizData.slice(0, questionCount);
+            }
+
+            selectionContainer.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            
+            shuffleArray(filteredQuizData);
+            currentQuestionIndex = 0;
+            score = 0;
+            showQuestion();
+        }
+        
+        function showSelectionScreen() {
+            quizContainer.classList.add('hidden');
+            selectionContainer.classList.remove('hidden');
+            difficultySelection.classList.add('hidden');
+            groupSelection.classList.remove('hidden');
+            questionTitle.textContent = 'この声は誰？';
+            nextButton.textContent = '次の問題へ';
+        }
+
+        document.querySelectorAll('.group-btn').forEach(button => {
+            button.onclick = () => {
+                selectedGroup = button.dataset.group;
+                groupSelection.classList.add('hidden');
+                difficultySelection.classList.remove('hidden');
+            };
+        });
+
+        document.querySelectorAll('.difficulty-btn').forEach(button => {
+            button.onclick = () => {
+                selectedDifficulty = button.dataset.difficulty;
+                startGame();
+            };
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (nextButton.textContent === 'もう一度挑戦！') {
+                showSelectionScreen();
+            } else {
+                currentQuestionIndex++;
+                showQuestion();
+            }
+        });
+        
+        playButton.addEventListener('click', () => document.getElementById('voice-player').play());
+        
+        resetButton.addEventListener('click', () => {
+            if (confirm('本当に最初の画面に戻りますか？\n（今のクイズの記録はリセットされます）')) {
+                showSelectionScreen();
+            }
+        });
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function showQuestion() {
+            if (currentQuestionIndex >= filteredQuizData.length) {
+                showFinalResults();
+                return;
+            }
+            
+            resultText.textContent = '';
+            characterImage.classList.add('hidden');
+            nextButton.classList.add('hidden');
+            choicesContainer.innerHTML = '';
+            playButton.classList.remove('hidden');
+
+            const currentQuiz = filteredQuizData[currentQuestionIndex];
+            progressText.textContent = `${currentQuestionIndex + 1} / ${filteredQuizData.length} 問目`;
+            document.getElementById('voice-player').src = currentQuiz.voice;
+
+            // ▼▼▼【変更点】難易度によって選択肢の数を変える ▼▼▼
+            let choiceCount = 0;
+            if (selectedDifficulty === 'むずかしい') {
+                choiceCount = 8;
+            } else {
+                choiceCount = 4;
+            }
+
+            // 正解の選択肢を取得
+            const correctAnswer = currentQuiz.choices.find(choice => choice.name === currentQuiz.answer);
+
+            // 正解以外のダミー選択肢を取得
+            const dummyChoices = currentQuiz.choices.filter(choice => choice.name !== currentQuiz.answer);
+            shuffleArray(dummyChoices);
+
+            // 必要な数のダミー選択肢を抽出
+            const selectedDummies = dummyChoices.slice(0, choiceCount - 1);
+
+            // 最終的な選択肢リストを作成（正解 + ダミー）
+            let finalChoices = [correctAnswer, ...selectedDummies];
+            shuffleArray(finalChoices);
+
+            finalChoices.forEach(choice => {
+                const button = document.createElement('button');
+                button.classList.add('choice-button');
+                button.dataset.name = choice.name;
+                const img = document.createElement('img');
+                img.src = choice.image;
+                img.classList.add('choice-image');
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = choice.name;
+                nameSpan.classList.add('choice-name');
+                button.appendChild(img);
+                button.appendChild(nameSpan);
+                button.onclick = () => checkAnswer(choice.name);
+                choicesContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedName) {
+            const currentQuiz = filteredQuizData[currentQuestionIndex];
+            document.querySelectorAll('.choice-button').forEach(button => {
+                button.disabled = true;
+                if (button.dataset.name === currentQuiz.answer) {
+                    button.style.borderColor = '#28a745';
+                    button.style.backgroundColor = '#2c5c3c';
+                }
+            });
+
+            if (selectedName === currentQuiz.answer) {
+                resultText.textContent = '🎉 正解！ 🎉';
+                score++;
+            } else {
+                resultText.textContent = `不正解… 正解は「${currentQuiz.answer}」`;
+            }
+
+            characterImage.src = currentQuiz.answerImage;
+            characterImage.classList.remove('hidden');
+            nextButton.classList.remove('hidden');
+        }
+        
+        function showFinalResults() {
+            questionTitle.textContent = 'クイズ終了！';
+            progressText.textContent = '';
+            choicesContainer.innerHTML = '';
+            resultText.innerHTML = `<p id="final-score">最終結果: ${filteredQuizData.length}問中 ${score}問正解！</p>`;
+            characterImage.classList.add('hidden');
+            playButton.classList.add('hidden');
+            nextButton.textContent = 'もう一度挑戦！';
+            nextButton.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

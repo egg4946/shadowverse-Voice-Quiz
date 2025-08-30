@@ -1,0 +1,122 @@
+const allQuizData = [
+            {
+                voice: 'assets/pack1/voices/メイF.mp3',
+                answerImage: 'assets/pack1/images/アドベンチャーエルフ・メイ.png',
+                answer: 'アドベンチャーエルフ・メイ',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: 'アドベンチャーエルフ・メイ', image: 'assets/pack1/images/アドベンチャーエルフ・メイ.png' },
+                    { name: 'ウォーターフェアリー', image: 'assets/pack1/images/ウォーターフェアリー.png' },
+                    { name: 'ピュアクリスタリア・リリィ', image: 'assets/pack1/images/ピュアクリスタリア・リリィ.png' },
+                    { name: '舞い踊る妖精', image: 'assets/pack1/images/舞い踊る妖精.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/異端の侍F.mp3',
+                answerImage: 'assets/pack1/images/異端の侍.png',
+                answer: '異端の侍',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '異端の侍', image: 'assets/pack1/images/異端の侍.png' },
+                    { name: 'レヴィオンアックス・ジェノ', image: 'assets/pack1/images/レヴィオンアックス・ジェノ.png' },
+                    { name: '常在戦場・カゲミツ', image: 'assets/pack1/images/常在戦場・カゲミツ.png' },
+                    { name: 'レヴィオンの迅雷・アルベール', image: 'assets/pack1/images/レヴィオンの迅雷・アルベール.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/アポロンF.mp3',
+                answerImage: 'assets/pack1/images/迸る光明・アポロン.png',
+                answer: '迸る光明・アポロン',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '迸る光明・アポロン', image: 'assets/pack1/images/迸る光明・アポロン.png' },
+                    { name: '不屈のファイター', image: 'assets/pack1/images/不屈のファイター.png' },
+                    { name: '激震のゴリアテ', image: 'assets/pack1/images/激震のゴリアテ.png' },
+                    { name: '観察の探偵', image: 'assets/pack1/images/観察の探偵.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/エースE.mp3',
+                answerImage: 'assets/pack1/images/新たなる少女・エース.png',
+                answer: '新たなる少女・エース',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '新たなる少女・エース', image: 'assets/pack1/images/新たなる少女・エース.png' },
+                    { name: 'ストラグルリーダー・ルキナ', image: 'assets/pack1/images/ストラグルリーダー・ルキナ.png' },
+                    { name: 'ブーストエクステンド・ララミア', image: 'assets/pack1/images/ブーストエクステンド・ララミア.png' },
+                    { name: 'プロシードハート・オーキス', image: 'assets/pack1/images/プロシードハート・オーキス.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/ミリアムF.mp3',
+                answerImage: 'assets/pack1/images/レゾリューション・ミリアム.png',
+                answer: 'レゾリューション・ミリアム',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: 'レゾリューション・ミリアム', image: 'assets/pack1/images/レゾリューション・ミリアム.png' },
+                    { name: 'アンストッパブルガンナー', image: 'assets/pack1/images/アンストッパブルガンナー.png' },
+                    { name: 'ビビッドインベンター・イリス', image: 'assets/pack1/images/ビビッドインベンター・イリス.png' },
+                    { name: 'エレクトロウィッパー', image: 'assets/pack1/images/エレクトロウィッパー.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/ミーノF.mp3',
+                answerImage: 'assets/pack1/images/辣腕の死神・ミーノ.png',
+                answer: '辣腕の死神・ミーノ',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '辣腕の死神・ミーノ', image: 'assets/pack1/images/辣腕の死神・ミーノ.png' },
+                    { name: '無名の悪魔', image: 'assets/pack1/images/無名の悪魔.png' },
+                    { name: '魅惑のサキュバス・リリム', image: 'assets/pack1/images/魅惑のサキュバス・リリム.png' },
+                    { name: '燃え盛る魔剣・オルトロス', image: 'assets/pack1/images/燃え盛る魔剣・オルトロス.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/王断の威光F.mp3',
+                answerImage: 'assets/pack1/images/王断の威光.png',
+                answer: '王断の威光',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '王断の威光', image: 'assets/pack1/images/王断の威光.png' },
+                    { name: '王家の御者', image: 'assets/pack1/images/王家の御者.png' },
+                    { name: '王断の天宮・スタチウム', image: 'assets/pack1/images/王断の天宮・スタチウム.png' },
+                    { name: '白銀の騎士団長・エミリア', image: 'assets/pack1/images/白銀の騎士団長・エミリア.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/マリオネットランサーD.mp3',
+                answerImage: 'assets/pack1/images/マリオネットランサー.png',
+                answer: 'マリオネットランサー',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: 'マリオネットランサー', image: 'assets/pack1/images/マリオネットランサー.png' },
+                    { name: 'オートマタアサシン', image: 'assets/pack1/images/オートマタアサシン.png' },
+                    { name: '殺意の糸・ノア', image: 'assets/pack1/images/殺意の糸・ノア.png' },
+                    { name: '愛執のドールユーザー', image: 'assets/pack1/images/愛執のドールユーザー.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/竜育の少女F.mp3',
+                answerImage: 'assets/pack1/images/竜育の少女.png',
+                answer: '竜育の少女',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '竜育の少女', image: 'assets/pack1/images/竜育の少女.png' },
+                    { name: '栄弦の天宮・リュウフウ', image: 'assets/pack1/images/栄弦の天宮・リュウフウ.png' },
+                    { name: '駆け出しのドラゴンスレイヤー', image: 'assets/pack1/images/駆け出しのドラゴンスレイヤー.png' },
+                    { name: '風を駆る者・エイファ', image: 'assets/pack1/images/風を駆る者・エイファ.png' }
+                ]
+            },
+            {
+                voice: 'assets/pack1/voices/フィルドアF.mp3',
+                answerImage: 'assets/pack1/images/楽朗の天宮・フィルドア.png',
+                answer: '楽朗の天宮・フィルドア',
+                group: 'ベーシック+伝説の幕開け(1)', difficulty: 'かんたん',
+                choices: [
+                    { name: '楽朗の天宮・フィルドア', image: 'assets/pack1/images/楽朗の天宮・フィルドア.png' },
+                    { name: '禁密の天宮・ロナヴェロ', image: 'assets/pack1/images/禁密の天宮・ロナヴェロ.png' },
+                    { name: '瞑地の天宮・ムカン', image: 'assets/pack1/images/瞑地の天宮・ムカン.png' },
+                    { name: '薫交の天宮・バックウッド', image: 'assets/pack1/images/薫交の天宮・バックウッド.png' }
+                ]
+            },
+        ];
