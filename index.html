@@ -19,7 +19,6 @@
     </script>
     
     <style>
-        /* CSSに変更はありません */
         body { font-family: sans-serif; text-align: center; background-color: #1a2639; color: #f0f8ff; padding: 20px; }
         h1 { color: #ffc107; }
         .hidden { display: none; }
@@ -911,7 +910,7 @@
             progressText.textContent = `${currentQuestionIndex + 1} / ${filteredQuizData.length} 問目`;
             document.getElementById('voice-player').src = currentQuiz.voice;
 
-            // ▼▼▼【変更点】難易度によって選択肢の数を変える ▼▼▼
+            // ▼▼▼難易度によって選択肢の数を変える ▼▼▼
             let choiceCount = 0;
             if (selectedDifficulty === 'むずかしい') {
                 choiceCount = 8;
